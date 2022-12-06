@@ -1,0 +1,9 @@
+{
+    "account": "xxx.us-east-1",
+    "user": "xxx",
+    "password": "xxxx",
+    "role": "dba",
+    "database": "DB1",
+    "schema": "SCHEMA_DB",
+    "warehouse": "main_wh"
+ }
