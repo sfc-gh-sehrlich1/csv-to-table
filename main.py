@@ -5,29 +5,38 @@ from snowflake.snowpark import Session, Row
 from snowflake.snowpark.functions import call_udf, col
 from snowflake.snowpark import functions as f
 import json
+import requests
 
-if not hasattr(st, 'already_started_server'):
-    # Hack the fact that Python modules (like st) only load once to
-    # keep track of whether this file already ran.
-    st.already_started_server = True
+def login():
+    link = 'https://qub36650.us-east-1.snowflakecomputing.com/oauth/authorize?response_type=code&client_id=l%2B%2BCE7r3X%2BF3KjIf9ncaZ4BKim8%3D&redirect_uri=http%3A%2F%2Flocalhost%3A8503%2F'
+    st.markdown("Click here to [login](%s)" % link,unsafe_allow_html=True)
+    value1 = st.experimental_get_query_params()
+    if value1:
+        print(value1["code"][0])
+        
+        data = {'client_id':client_id,
+            'client_secret':client_secret,
+            'grant_type':grant_type,
+            'scope':scope,
+            'redirect_uri':redirect_uri,
+            'code':code}
 
-    st.write('''
-        The first time this script executes it will run forever because it's
-        running a Flask server.
+        try:
+            r = requests.post(url = token_url, data = data)
+            access_token = r.text
+            print("Got code: %s: returning token: %s" % (code, access_token))
+            access_token = json.loads(access_token)['access_token']
+            return "<p>Here is your token:</p><p>%s</p>" % access_token
 
-        Just close this browser tab and open a new one to see your Streamlit
-        app.
-    ''')
+        except requests.exceptions.RequestException as e:
+            print("Got exception: %s" % e)
+            return "<p>Exception, please contact your administrator: %s</p>" % e
 
-    from flask import Flask
+    return "sam"
 
-    app = Flask(__name__)
+user = login()
 
-    @app.route('/foo')
-    def serve_foo():
-        return 'This page is served via Flask!'
-
-    app.run(port=8501)
+# st.experimental_get_query_params()
 
 # Display Content #
 
@@ -72,7 +81,6 @@ result_1 = st.button("Create Connection")
 
 if result_1:
 
-    
     if not account:
         with open('connection.json') as fl:
             connection_parameters = json.load(fl)  
